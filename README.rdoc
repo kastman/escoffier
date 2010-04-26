@@ -1,23 +1,23 @@
 = escoffier
 
-* http://github.com/kastman/escoffier
+Escoffier is a prep chef for simple administrative tasks that I need, like 
+managing the file system to make a local copy and unzip of large directories
+and the like. 
+
+* Source at: http://github.com/kastman/escoffier
 
 == DESCRIPTION:
 
-FIX (describe your package)
+	You'll probably want to include compressible or use the mise bin.
 
 == SYNOPSIS:
 
-  FIX (code sample of usage)
+	mise /my/large/directory
 
 == REQUIREMENTS:
 
-* FIX (list of requirements)
-
-== INSTALL:
-
-* FIX (sudo gem install, anything else)
-
+	* Nothing yet.
+	
 == LICENSE:
 
 (The MIT License)
