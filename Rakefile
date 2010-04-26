@@ -9,7 +9,7 @@ begin
     gemspec.email = "ekk@medicine.wisc.edu"
     gemspec.homepage = "http://github.com/kastman/escoffier"
     gemspec.authors = ["Erik Kastman"]
-    # gemspec.add_dependency('sqlite3-ruby')
+    gemspec.add_dependency('bzip2-ruby')
     gemspec.add_development_dependency('rspec')
   end
   Jeweler::GemcutterTasks.new

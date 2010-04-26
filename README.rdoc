@@ -8,7 +8,7 @@ and the like.
 
 == DESCRIPTION:
 
-You'll probably want to include compressible or use the mise bin.
+You'll probably want to 'include compressible' or use the `mise` executible.
 
 == SYNOPSIS:
 
@@ -16,7 +16,7 @@ You'll probably want to include compressible or use the mise bin.
 
 == REQUIREMENTS:
 
-* Nothing yet.
+* Unzipping is done via brianmario's bzip2-ruby gem, or if that fails (for very large files), falls back to a system call to `bzip2` 
 	
 == LICENSE:
 
