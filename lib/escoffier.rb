@@ -4,7 +4,7 @@ $:.unshift(File.dirname(__FILE__)) unless
 require 'escoffier/core_additions'
 require 'escoffier/normalizer'
 require 'escoffier/compressible'
-require 'escoffier/sandboxable'
+require 'escoffier/smepable'
 
 module Escoffier
   VERSION = '0.0.1'

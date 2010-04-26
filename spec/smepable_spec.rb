@@ -5,11 +5,11 @@ require 'spec'
 require 'fileutils'
 require 'logger'
 require 'escoffier'
-require 'escoffier/sandboxable'
+require 'escoffier/smepable'
 require 'escoffier/core_additions'
 
 
-describe "Test Copying and Unzipping with Sandboxable" do  
+describe "Test Copying and Unzipping with Standard Mise En Place SMEP" do  
   
   before(:all) do
     @test_directories = {
@@ -40,13 +40,13 @@ describe "Test Copying and Unzipping with Sandboxable" do
   it "should unzip and decompress a small image dataset inside a sandbox" do
     directory = @test_directories[:small_dataset]
     d = Pathname.new(directory[:source])
-    d.sandbox(directory[:source], directory[:destination])
+    d.prep_mise(directory[:source], directory[:destination])
   end
   
   it "should unzip and decompress a full visit inside a sandbox" do
     directory = @test_directories[:full_visit]
     d = Pathname.new(directory[:source])
-    d.sandbox(directory[:source], directory[:destination])
+    d.prep_mise(directory[:source], directory[:destination])
   end
   
   

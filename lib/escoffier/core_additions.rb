@@ -1,9 +1,9 @@
-require 'escoffier/sandboxable'
+require 'escoffier/smepable'
 
 class Pathname
-  include Sandboxable
+  include Smepable
   
-  def sandbox_to(output_dir)
-    self.sandbox(self.to_s, output_dir)
+  def prep_mise_to(output_dir)
+    self.prep_mise(self.to_s, output_dir)
   end
 end

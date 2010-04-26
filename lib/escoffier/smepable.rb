@@ -4,11 +4,12 @@ require 'tmpdir'
 require 'logger'
 require 'escoffier/compressible'
 
-module Sandboxable
+# Standard Mise en Place-able
+module Smepable
   $LOG ||= Logger.new(STDOUT)
   include Compressible
   
-  def sandbox(input_entry, output_directory = Dir.mktmpdir)
+  def prep_mise(input_entry, output_directory = Dir.mktmpdir)
     # destination_dirname = File.dirname(output_directory)
     FileUtils.mkdir_p(output_directory) unless File.exist?(output_directory)
     $LOG.info "Copying #{input_entry} to #{output_directory}"
