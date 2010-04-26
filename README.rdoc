@@ -8,7 +8,7 @@ and the like.
 
 == DESCRIPTION:
 
-	You'll probably want to include compressible or use the mise bin.
+You'll probably want to include compressible or use the mise bin.
 
 == SYNOPSIS:
 
@@ -16,7 +16,7 @@ and the like.
 
 == REQUIREMENTS:
 
-	* Nothing yet.
+* Nothing yet.
 	
 == LICENSE:
 
