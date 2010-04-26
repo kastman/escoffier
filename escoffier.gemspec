@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
      "VERSION",
      "bin/mise",
      "bin/normalize_directory.rb",
+     "escoffier.gemspec",
      "lib/escoffier.rb",
      "lib/escoffier/compressible.rb",
      "lib/escoffier/core_additions.rb",
