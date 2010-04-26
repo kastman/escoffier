@@ -1,0 +1,81 @@
+#!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__),'..','lib')
+
+require 'optparse'
+require 'etc'
+require 'pathname'
+require 'logger'
+require 'tmpdir'
+require 'escoffier'
+
+def parse_options
+  options = Hash.new
+  parser = OptionParser.new do |opts|
+    opts.banner = "Usage: #{__FILE__} [options] paths"
+
+    opts.on('-o', '--output OUTPUT_DIRECTORY', "Output Destination Directory")     do |dir| 
+      options[:output] = dir
+      abort "Cannot find directory #{dir}." unless File.directory?(dir)
+    end
+    
+    opts.on('-t', '--temp', "Make a temporary directory for output")     do |dir| 
+      options[:mktmpdir] = true
+      abort "Output directory already specified - not creating a temporary directory." if options[:dir] 
+    end
+    
+    # opts.on('-f', '--[no-]force', "Force Overwrite of the sandbox") do |f|
+    #   options[:force] = f
+    # end
+    
+    opts.on('-v', '--[no-]verbose', "Get detailed output") do |v|
+      options[:verbose] = v
+    end
+
+    opts.on_tail('-h', '--help',          "Show this message")          { puts(parser); exit }
+  end
+
+  parser.parse!(ARGV)
+  return options
+end
+
+def sandbox_this(directories, options)
+  if options[:output]
+    destination = options[:output]
+  elsif options[:mktmpdir]
+    begin 
+      destination = Dir.mktmpdir      
+    rescue
+      begin 
+        destination = Dir.tmpdir
+      rescue
+        destination = '/tmp/'
+      end
+    end
+  else
+    destination = Dir.pwd
+  end
+  
+  directories.each do |directory|
+    # if options[:force]
+    #   sandbox_dir = File.join(destination, File.basename(directory))
+    #   if File.exist?(sandbox_dir)
+    #     $LOG.info "Freshening up #{sandbox_dir}"
+    #     FileUtils.rm_r(sandbox_dir) 
+    #   end
+    # end
+    
+    directory.sandbox_to(destination)
+  end
+  
+  Dir.chdir(destination)
+    
+end
+
+if File.basename(__FILE__) == File.basename($PROGRAM_NAME)
+  $LOG = Logger.new(STDOUT)
+  $LOG.level = Logger::INFO
+  
+  options = parse_options
+  directories = ARGV.collect { |dir| Pathname.new(dir) }
+  sandbox_this(directories, options)
+end

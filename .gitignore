@@ -1,0 +1,7 @@
+*.log
+*.gem
+._*
+.idea
+*~
+test/fixtures/visit_raw_data_directory
+doc/*
