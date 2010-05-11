@@ -11,12 +11,12 @@ require 'escoffier'
 def parse_options
   options = Hash.new
   parser = OptionParser.new do |opts|
-    opts.banner = "Usage: #{__FILE__} [options] paths"
+    opts.banner = "Usage: #{__FILE__} [options] source_paths destination"
 
-    opts.on('-o', '--output OUTPUT_DIRECTORY', "Output Destination Directory")     do |dir| 
-      options[:output] = dir
-      abort "Cannot find directory #{dir}." unless File.directory?(File.dirname(dir))
-    end
+    # opts.on('-o', '--output OUTPUT_DIRECTORY', "Output Destination Directory")     do |dir| 
+    #   options[:output] = dir
+    #   abort "Cannot find directory #{dir}." unless File.directory?(File.dirname(dir))
+    # end
     
     opts.on('-t', '--temp', "Make a temporary directory for output")     do |dir| 
       options[:mktmpdir] = true
@@ -32,16 +32,16 @@ def parse_options
     end
 
     opts.on_tail('-h', '--help',          "Show this message")          { puts(parser); exit }
+	opts.on_tail("Example Usage - Use like cp or mv: #{__FILE__} /Data/vtrak1/raw/gallagher.pd/mri/pd005b/009 /tmp")
   end
 
   parser.parse!(ARGV)
+  puts parser unless ARGV.size >= 2
   return options
 end
 
 def prep_mise(directories, options)
-  if options[:output]
-    destination = options[:output]
-  elsif options[:mktmpdir]
+  if options[:mktmpdir]
     begin 
       destination = Dir.mktmpdir      
     rescue
@@ -52,23 +52,13 @@ def prep_mise(directories, options)
       end
     end
   else
-    destination = Dir.pwd
+    destination = directories.pop
   end
   
-  directories.each do |directory|
-    # if options[:force]
-    #   sandbox_dir = File.join(destination, File.basename(directory))
-    #   if File.exist?(sandbox_dir)
-    #     $LOG.info "Freshening up #{sandbox_dir}"
-    #     FileUtils.rm_r(sandbox_dir) 
-    #   end
-    # end
-    
+  directories.each do |directory|   
     directory.prep_mise_to(destination)
   end
-  
-  Dir.chdir(destination)
-    
+      
 end
 
 if File.basename(__FILE__) == File.basename($PROGRAM_NAME)
