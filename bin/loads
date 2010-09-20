@@ -1,26 +1,51 @@
 #!/usr/bin/env ruby
+#
+# loads uses Simple Network Management Protocol (SNMP) configured for the
+# WADRC site to display load information of computer utilization to allow
+# people to know where to process.
+#
+# Originally based off of a script written by John Ollinger @ Waisman,
+# this uses SNMP instead of ssh and displays color based on percent
+# utilization.
+#
+# EKK / WADRC Neuroimaging Core / Sept. 20, 2010
 
 require 'rubygems'
-require 'pp'
 require 'snmp'
 require 'term/ansicolor'
+LOAD_PATHS = %w{. ~/.loads /etc /Data/vtrak1/data1/lab_scripts }
 
-def hosts
+# Load in the list of hosts to monitor.
+# Look for a file called "load_config.yaml" first in the current directory, then  
+def host_list
   if ARGV.size >= 1
     hosts = ARGV
-  else
-    # Key-value pairs are hostname and number of CPUs
-    hosts = {
-      :miho => 4, 
-      :pebbles => 4,
-      :schroeder => 8,
-      :nelson => 8,
-      :jimbo => 8,
-      :kearney => 8,
-      :stella => 16}
+  else 
+    LOAD_PATHS.each do |path|
+      hosts = read_config File.join(path, "load_config.yaml")
+      if hosts
+        # puts "Using hosts listed in load_config.yaml from #{path}"
+        return hosts
+      end
+    end
+
+    # If no host config was found, just use localhost.
+    if hosts.nil?
+      puts "Warning: Unable to find host information."
+      hosts = {:localhost => 0}
+    end
   end
 end
 
+# Read YAML file if it exists.
+def read_config(file)
+  if File.readable? file
+    require 'yaml'
+    YAML::load_file file
+  end
+end
+
+# Gather CPU Utilization Data from a list of Hosts using SNMP
 def gather_data_on(hosts)
   load_data = {}
 
@@ -40,13 +65,12 @@ def gather_data_on(hosts)
       # just list the required OID's directly.
       SNMP::Manager.open(:Host => hostname, :Community => 'brainmap', :MibModules => mibs, :retries => 1, :timeout => 1) do |manager|
         name = manager.get("sysName.0").varbind_list.first.value.split(".").first.to_s
+        oids = ["1.3.6.1.4.1.2021.10.1.3.1", "1.3.6.1.4.1.2021.10.1.3.2", "1.3.6.1.4.1.2021.10.1.3.3"]
+        load_data[name] = { :loads => manager.get(oids).each_varbind.collect {|vb| vb.value.to_s }, :cpu_count => cpus }
         # 1-min:  UCD-SNMP-MIB::laLoad.1 => "1.3.6.1.4.1.2021.10.1.3.1"
         # 5-min:  UCD-SNMP-MIB::laLoad.2 => "1.3.6.1.4.1.2021.10.1.3.2"
         # 15-min: UCD-SNMP-MIB::laLoad.3 => "1.3.6.1.4.1.2021.10.1.3.3"
-        # load_data[name] = [manager.get(["UCD-SNMP-MIB::laLoad.1", "UCD-SNMP-MIB::laLoad.2", "UCD-SNMP-MIB::laLoad.3"]).each_varbind.collect{|vb| vb.value.to_s }, cpus]
-        load_data[name] = [manager.get(["1.3.6.1.4.1.2021.10.1.3.1", "1.3.6.1.4.1.2021.10.1.3.2", "1.3.6.1.4.1.2021.10.1.3.3"]).each_varbind.collect{|vb| vb.value.to_s }, cpus]
-        # response = manager.get(["sysName.0", "UCD-SNMP-MIB::laLoad.1", "UCD-SNMP-MIB::laLoad.2", "UCD-SNMP-MIB::laLoad.3"])
-        # pp response
+        # oids = ["UCD-SNMP-MIB::laLoad.1", "UCD-SNMP-MIB::laLoad.2", "UCD-SNMP-MIB::laLoad.3"]
       end
     rescue SNMP::RequestTimeout => e
       puts "Warning: #{e}"
@@ -55,34 +79,47 @@ def gather_data_on(hosts)
     end
   end
   
-  display_data(load_data)
+  unless load_data.empty?
+    build_display(load_data)
+  else
+    puts Term::ANSIColor.bold {"\nError: No CPU load data available."}
+    puts "Please check that SNMP is running on all machines and that they are "
+    "configured correctly in load_config.yaml\n\n"
+  end
 end
 
-def display_data(load_data)
-  display = ""
-  display << "\nLoad Averages over three intervals:\n\n"
-  display << Term::ANSIColor.bold {"\t%-15s\t%-4s\t" % ["Server (CPUs)", "% Util"] }
-  display << Term::ANSIColor.bold {"%s\t%s\t%s\n" % ["1-minute", "5-minutes", "15-minutes"] }
+# Header Information for the CPU Table
+def header
+  display = "\nLoad Averages over three intervals:\n\n"
+  display << Term::ANSIColor.bold 
+  display << "\t%-15s\t%-4s\t" % ["Server (CPUs)", "% Util"]
+  display << "%s\t%s\t%s\n" % ["1-minute", "5-minutes", "15-minutes"] 
   display << "\t%-15s\t%-4s\t%s\t%s\t%s\n" % ["-"*13, "-"*6, "-" * 8, "-" * 8, "-" * 8]
-  load_data.sort_by{|la| la.last.first}.reverse.each do |average_hash|
-    cpus = average_hash.last.last
-    utilization = (average_hash.last.first[1].to_f / cpus) * 100
+  display << Term::ANSIColor.clear
+end
+
+# Build Output for the CPU Table
+def build_display(load_data)
+  display = header
+  load_data.sort_by{|data| data.last[:loads][1].to_f / data.last[:cpu_count]}.reverse.each do |hostname, averages|
+    utilization = (averages[:loads][1].to_f / averages[:cpu_count]) * 100
+    low = 50; high = 80
     case utilization
-    when 0.0...50.0
+    when 0...low
       color = "green"
-    when 50.0..100
+    when low..high
       color = "yellow"
     else
       color = "red"
     end
     display << eval("Term::ANSIColor.#{color}")
-    display << "\t%-15s\t" % "#{average_hash.first} (#{average_hash.last.last})"
+    display << "\t%-15s\t" % "#{hostname} (#{averages[:cpu_count]})"
     display << "%-2.2f\t" % utilization
-    average_hash.last.first.collect {|la| display << "%s\t\t" % la }
+    averages[:loads].collect {|la| display << "%s\t\t" % la }
     display << "\n"
   end
   display << Term::ANSIColor.clear
 end
 
-
-puts gather_data_on hosts
+# Run Main Program
+puts gather_data_on host_list

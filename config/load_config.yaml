@@ -1,0 +1,6 @@
+# Example load_config.yaml script for loads
+# Format: Resolvable hostname: Number of CPUs
+pebbles: 4
+schroeder: 8
+nelson: 8
+rafiki: 16
