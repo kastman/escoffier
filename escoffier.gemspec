@@ -5,14 +5,14 @@
 
 Gem::Specification.new do |s|
   s.name = %q{escoffier}
-  s.version = "0.1.0"
+  s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Erik Kastman"]
-  s.date = %q{2010-05-11}
+  s.date = %q{2010-09-20}
   s.description = %q{Administrative prep tasks, from mother sauces to hotel pans.}
   s.email = %q{ekk@medicine.wisc.edu}
-  s.executables = ["normalize_directory.rb", "mise~", "mise"]
+  s.executables = ["normalize_directory.rb", "mise~", "mise", "loads"]
   s.extra_rdoc_files = [
     "README.rdoc"
   ]
@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
      "README.rdoc",
      "Rakefile",
      "VERSION",
+     "bin/loads",
      "bin/mise",
      "bin/normalize_directory.rb",
      "escoffier.gemspec",
@@ -55,13 +56,19 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<bzip2-ruby>, [">= 0"])
+      s.add_runtime_dependency(%q<snmp>, [">= 0"])
+      s.add_runtime_dependency(%q<term-ansicolor>, [">= 0"])
       s.add_development_dependency(%q<rspec>, [">= 0"])
     else
       s.add_dependency(%q<bzip2-ruby>, [">= 0"])
+      s.add_dependency(%q<snmp>, [">= 0"])
+      s.add_dependency(%q<term-ansicolor>, [">= 0"])
       s.add_dependency(%q<rspec>, [">= 0"])
     end
   else
     s.add_dependency(%q<bzip2-ruby>, [">= 0"])
+    s.add_dependency(%q<snmp>, [">= 0"])
+    s.add_dependency(%q<term-ansicolor>, [">= 0"])
     s.add_dependency(%q<rspec>, [">= 0"])
   end
 end
