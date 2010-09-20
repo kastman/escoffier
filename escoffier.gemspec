@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{escoffier}
-  s.version = "0.1.1"
+  s.version = "0.1.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Erik Kastman"]
@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
      "bin/loads",
      "bin/mise",
      "bin/normalize_directory.rb",
+     "config/load_config.yaml",
      "escoffier.gemspec",
      "lib/escoffier.rb",
      "lib/escoffier/compressible.rb",
