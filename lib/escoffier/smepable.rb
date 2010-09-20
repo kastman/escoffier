@@ -9,7 +9,7 @@ module Smepable
   $LOG ||= Logger.new(STDOUT)
   include Compressible
   
-  def prep_mise(input_entry, output_directory = Dir.mktmpdir)
+  def prep_mise(input_entry, output_directory = Dir.mktmpdir, &block)
     # destination_dirname = File.dirname(output_directory)
     FileUtils.mkdir_p(output_directory) unless File.exist?(output_directory)
     $LOG.info "Copying #{input_entry} to #{output_directory}"
@@ -19,7 +19,17 @@ module Smepable
     $LOG.info "Unzipping #{output_directory}"
     unzip(output_directory, :recursive => true)
     
-    return output_directory
+    if block
+      begin
+        yield output_directory
+      ensure
+        File.delete(output_directory)
+      end
+
+    else
+      return output_directory
+    end
+    
   end
   
 end

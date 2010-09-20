@@ -11,7 +11,7 @@ require 'escoffier'
 def parse_options
   options = Hash.new
   parser = OptionParser.new do |opts|
-    opts.banner = "Usage: #{__FILE__} [options] source_paths destination"
+    opts.banner = "Usage: #{File.basename(__FILE__)} [options] source_paths destination"
 
     # opts.on('-o', '--output OUTPUT_DIRECTORY', "Output Destination Directory")     do |dir| 
     #   options[:output] = dir

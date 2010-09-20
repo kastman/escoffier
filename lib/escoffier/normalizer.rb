@@ -5,7 +5,9 @@ require 'escoffier/compressible'
 
 class Normalizer
   COMPRESSION_REGEXES = /\.bz2$/
+  PFILE_REGEXES = [/^P\d{5}\.7$/]
   DICOM_REGEXES = [/\d{3,5}.dcm$/, /I?.\d{4}$/ ]
+  IMAGE_REGEXES = [PFILE_REGEXES, DICOM_REGEXES].flatten
   
   include Compressible
   attr_reader :entry_path
@@ -53,7 +55,7 @@ class Normalizer
   end
   
   def normalize_compression(file)
-     DICOM_REGEXES.each do |regex|
+     IMAGE_REGEXES.each do |regex|
        if file =~ regex
          file = zip(file) unless @dry_run
        end

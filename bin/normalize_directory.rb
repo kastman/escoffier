@@ -49,7 +49,7 @@ def normalize!(options)
   directories = ARGV.to_a
   directories.each do |directory|
     unless File.directory?(directory)
-      puts "Error: Cannot find directory #{dir}."
+      puts "Error: Cannot find directory #{directory}."
       next
     end
     normalizer = Normalizer.new(directory, options)
@@ -61,8 +61,8 @@ if File.basename(__FILE__) == File.basename($PROGRAM_NAME)
   $LOG = Logger.new(STDOUT)
   
   options = parse_options
-  if options[:spec]
-    directories = 
-  end
+  # if options[:spec]
+  #   directories = 
+  # end
   normalize!(options)
 end
