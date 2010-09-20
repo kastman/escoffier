@@ -10,6 +10,8 @@ begin
     gemspec.homepage = "http://github.com/kastman/escoffier"
     gemspec.authors = ["Erik Kastman"]
     gemspec.add_dependency('bzip2-ruby')
+    gemspec.add_dependency('snmp')
+    gemspec.add_dependency('term-ansicolor')
     gemspec.add_development_dependency('rspec')
   end
   Jeweler::GemcutterTasks.new

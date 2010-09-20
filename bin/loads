@@ -1,0 +1,88 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'pp'
+require 'snmp'
+require 'term/ansicolor'
+
+def hosts
+  if ARGV.size >= 1
+    hosts = ARGV
+  else
+    # Key-value pairs are hostname and number of CPUs
+    hosts = {
+      :miho => 4, 
+      :pebbles => 4,
+      :schroeder => 8,
+      :nelson => 8,
+      :jimbo => 8,
+      :kearney => 8,
+      :stella => 16}
+  end
+end
+
+def gather_data_on(hosts)
+  load_data = {}
+
+  hosts.each do |host|
+    begin
+      if host.kind_of? String
+        hostname = host
+        cpus = 0
+      elsif host.kind_of? Array
+        hostname = host.first.to_s
+        cpus = host.last 
+      end
+      # mibs = ["SNMPv2-MIB", "UCD-SNMP-MIB"]
+      mibs = ["SNMPv2-MIB"]
+      # Since the UCD-SNMP MIB is included by default in the SNMP gem, and it 
+      # does not correctly import, and we don't need dynamic lookup anyway,
+      # just list the required OID's directly.
+      SNMP::Manager.open(:Host => hostname, :Community => 'brainmap', :MibModules => mibs, :retries => 1, :timeout => 1) do |manager|
+        name = manager.get("sysName.0").varbind_list.first.value.split(".").first.to_s
+        # 1-min:  UCD-SNMP-MIB::laLoad.1 => "1.3.6.1.4.1.2021.10.1.3.1"
+        # 5-min:  UCD-SNMP-MIB::laLoad.2 => "1.3.6.1.4.1.2021.10.1.3.2"
+        # 15-min: UCD-SNMP-MIB::laLoad.3 => "1.3.6.1.4.1.2021.10.1.3.3"
+        # load_data[name] = [manager.get(["UCD-SNMP-MIB::laLoad.1", "UCD-SNMP-MIB::laLoad.2", "UCD-SNMP-MIB::laLoad.3"]).each_varbind.collect{|vb| vb.value.to_s }, cpus]
+        load_data[name] = [manager.get(["1.3.6.1.4.1.2021.10.1.3.1", "1.3.6.1.4.1.2021.10.1.3.2", "1.3.6.1.4.1.2021.10.1.3.3"]).each_varbind.collect{|vb| vb.value.to_s }, cpus]
+        # response = manager.get(["sysName.0", "UCD-SNMP-MIB::laLoad.1", "UCD-SNMP-MIB::laLoad.2", "UCD-SNMP-MIB::laLoad.3"])
+        # pp response
+      end
+    rescue SNMP::RequestTimeout => e
+      puts "Warning: #{e}"
+    rescue SocketError
+      puts "Warning: Host #{hostname} not recognized. #{e}"
+    end
+  end
+  
+  display_data(load_data)
+end
+
+def display_data(load_data)
+  display = ""
+  display << "\nLoad Averages over three intervals:\n\n"
+  display << Term::ANSIColor.bold {"\t%-15s\t%-4s\t" % ["Server (CPUs)", "% Util"] }
+  display << Term::ANSIColor.bold {"%s\t%s\t%s\n" % ["1-minute", "5-minutes", "15-minutes"] }
+  display << "\t%-15s\t%-4s\t%s\t%s\t%s\n" % ["-"*13, "-"*6, "-" * 8, "-" * 8, "-" * 8]
+  load_data.sort_by{|la| la.last.first}.reverse.each do |average_hash|
+    cpus = average_hash.last.last
+    utilization = (average_hash.last.first[1].to_f / cpus) * 100
+    case utilization
+    when 0.0...50.0
+      color = "green"
+    when 50.0..100
+      color = "yellow"
+    else
+      color = "red"
+    end
+    display << eval("Term::ANSIColor.#{color}")
+    display << "\t%-15s\t" % "#{average_hash.first} (#{average_hash.last.last})"
+    display << "%-2.2f\t" % utilization
+    average_hash.last.first.collect {|la| display << "%s\t\t" % la }
+    display << "\n"
+  end
+  display << Term::ANSIColor.clear
+end
+
+
+puts gather_data_on hosts
