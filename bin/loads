@@ -22,7 +22,7 @@ def host_list
     hosts = ARGV
   else 
     LOAD_PATHS.each do |path|
-      hosts = read_config File.join(path, "load_config.yaml")
+      hosts = read_config File.expand_path(File.join(path, "load_config.yaml"))
       if hosts
         # puts "Using hosts listed in load_config.yaml from #{path}"
         return hosts
@@ -114,7 +114,7 @@ def build_display(load_data)
     end
     display << eval("Term::ANSIColor.#{color}")
     display << "\t%-15s\t" % "#{hostname} (#{averages[:cpu_count]})"
-    display << "%-2.2f\t" % utilization
+    display << Term::ANSIColor.bold { "%-2.2f\t" % utilization }
     averages[:loads].collect {|la| display << "%s\t\t" % la }
     display << "\n"
   end
