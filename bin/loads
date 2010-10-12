@@ -74,7 +74,7 @@ def gather_data_on(hosts)
       end
     rescue SNMP::RequestTimeout => e
       puts "Warning: #{e}"
-    rescue SocketError
+    rescue SocketError, Errno::EHOSTUNREACH, Errno::EHOSTDOWN => e
       puts "Warning: Host #{hostname} not recognized. #{e}"
     end
   end
